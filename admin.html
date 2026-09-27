@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Кабинет мастера — Black Tim Local</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Inter','Segoe UI',Arial,sans-serif}
+body{background:#f5f5f7;color:#111}.gold{color:#d4af37}
+.hd{background:#0a0a0a;color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
+.hd b{font-size:16px}
+.wrap{max-width:760px;margin:0 auto;padding:20px}
+.panel{background:#fff;border-radius:16px;padding:20px;box-shadow:0 4px 14px rgba(0,0,0,.06);margin-bottom:16px}
+.panel h2{font-size:15px;margin-bottom:12px}
+.inp{width:100%;padding:11px;border:1px solid #ddd;border-radius:10px;font-size:14px;margin:5px 0}
+.btn{background:#0a0a0a;color:#fff;border:none;border-radius:24px;padding:11px 22px;font-size:13px;font-weight:600;cursor:pointer}
+.btn.g{background:#d4af37;color:#000}.btn.sm{padding:6px 12px;font-size:11px}.btn.red{background:#c0392b}
+.row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #eee;font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
+.stat{background:#0a0a0a;color:#fff;border-radius:14px;padding:14px;text-align:center}
+.stat b{font-size:20px;color:#d4af37;display:block}.stat span{font-size:10px;color:#999}
+.hidden{display:none}.msg{font-size:12px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="hd"><b>BLACK TIM <span class="gold">LOCAL</span> · Кабинет мастера</b><span id="hdr" style="font-size:12px;color:#888"></span></div>
+
+<div id="authView" class="wrap" style="max-width:380px;margin-top:60px">
+ <div class="panel"><h2>Вход для мастера (тест-режим)</h2>
+  <select class="inp" id="sel"></select>
+  <button class="btn" style="width:100%" onclick="enter()">ВОЙТИ В КАБИНЕТ</button>
+  <p class="msg" style="color:#888">В тест-режиме вход выбором мастера. Пароли и СМС-коды прикрутим вместе с боевой базой.</p>
+  <p class="msg"><a href="index.html" style="color:#888">← На сайт</a></p></div>
+</div>
+
+<div id="cabView" class="wrap hidden">
+ <div class="stats">
+  <div class="stat"><b id="sNew">0</b><span>НОВЫХ ЗАЯВОК</span></div>
+  <div class="stat"><b id="sAll">0</b><span>ВСЕГО ЗАЯВОК</span></div>
+  <div class="stat"><b id="sSvc">0</b><span>УСЛУГ</span></div>
+ </div>
+ <div class="panel"><h2>ЗАЯВКИ НА ЗАПИСЬ</h2><div id="bkList"></div></div>
+ <div class="panel"><h2>МОЙ ПРОФИЛЬ</h2>
+  <input class="inp" id="pname" placeholder="Имя">
+  <input class="inp" id="pcat" placeholder="Ниша">
+  <input class="inp" id="pdesc" placeholder="Описание">
+  <input class="inp" id="pphone" placeholder="Телефон">
+  <input class="inp" id="pwa" placeholder="WhatsApp (только цифры)">
+  <input class="inp" id="pprice" placeholder="Цена от">
+  <button class="btn" onclick="saveProfile()">Сохранить</button>
+  <button class="btn g" onclick="openPage()">Открыть мою страницу</button>
+  <p id="pmsg" class="msg"></p></div>
+ <div class="panel"><h2>УСЛУГИ</h2><div id="svcList"></div>
+  <div style="display:flex;gap:8px;margin-top:10px">
+   <input class="inp" id="sn" placeholder="Услуга" style="margin:0">
+   <input class="inp" id="sp" placeholder="Цена" style="margin:0;width:90px">
+   <button class="btn sm" onclick="addSvc()">+</button></div></div>
+ <button class="btn red" onclick="logout()">Выйти</button>
+</div>
+
+<script>
+const getM=()=>JSON.parse(localStorage.getItem('blacktim_masters')||'[]');
+const setM=a=>localStorage.setItem('blacktim_masters',JSON.stringify(a));
+const getS=()=>JSON.parse(localStorage.getItem('blacktim_services')||'[]');
+const setS=a=>localStorage.setItem('blacktim_services',JSON.stringify(a));
+const getB=()=>JSON.parse(localStorage.getItem('blacktim_bookings')||'[]');
+const setB=a=>localStorage.setItem('blacktim_bookings',JSON.stringify(a));
+let ME=null;
+function fillSel(){sel.innerHTML=getM().map(m=>`<option value="${m.id}">${m.name} (${m.category||'без ниши'})</option>`).join('')||'<option>Нет мастеров</option>';}
+function enter(){ME=getM().find(m=>m.id===+sel.value);if(!ME)return;localStorage.setItem('bt_session',ME.id);cab();}
+function cab(){
+ authView.classList.add('hidden');cabView.classList.remove('hidden');
+ hdr.textContent=ME.name;
+ pname.value=ME.name||'';pcat.value=ME.category||'';pdesc.value=ME.description||'';
+ pphone.value=ME.phone||'';pwa.value=ME.whatsapp||'';pprice.value=ME.price_from||'';
+ const bk=getB().filter(b=>b.master_id===ME.id);
+ sAll.textContent=bk.length;sNew.textContent=bk.filter(b=>b.status==='new').length;
+ sSvc.textContent=getS().filter(s=>s.master_id===ME.id).length;
+ bkList.innerHTML=bk.length?bk.map(b=>`<div class="row"><span><b>${b.client_name}</b> · ${b.client_phone} · ${b.date}</span><span>${b.status==='new'?`<button class="btn sm g" onclick="setBk(${b.id},'ok')">Принять</button> <button class="btn sm red" onclick="setBk(${b.id},'no')">Отклонить</button>`:(b.status==='ok'?'✅ Принята':'❌ Отклонена')}</span></div>`).join(''):'<p style="color:#888">Заявок пока нет</p>';
+ const sv=getS().filter(s=>s.master_id===ME.id);
+ svcList.innerHTML=sv.length?sv.map(s=>`<div class="row"><span>${s.name}</span><span><b>${s.price}₽</b> <button class="btn sm red" onclick="delSvc(${s.id})">×</button></span></div>`).join(''):'<p style="color:#888">Услуг нет — добавь ниже</p>';
+}
+function setBk(id,st){setB(getB().map(b=>b.id===id?Object.assign(b,{status:st}):b));cab();}
+function saveProfile(){
+ setM(getM().map(m=>m.id===ME.id?Object.assign(m,{name:pname.value,category:pcat.value,description:pdesc.value,phone:pphone.value,whatsapp:pwa.value,price_from:+pprice.value||0}):m));
+ ME=getM().find(m=>m.id===ME.id);
+ pmsg.textContent='✅ Сохранено — изменения уже на сайте';
+}
+function addSvc(){if(!sn.value||!sp.value)return;const a=getS();a.push({id:Date.now(),master_id:ME.id,name:sn.value,price:+sp.value});setS(a);sn.value='';sp.value='';cab();}
+function delSvc(id){setS(getS().filter(s=>s.id!==id));cab();}
+function openPage(){location.href='index.html#m'+ME.id;}
+function logout(){localStorage.removeItem('bt_session');location.reload();}
+fillSel();
+const ses=localStorage.getItem('bt_session');
+if(ses){ME=getM().find(m=>m.id===+ses);if(ME)cab();}
+</script>
+</body>
+</html>
