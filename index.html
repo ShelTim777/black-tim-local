@@ -15,7 +15,8 @@ body{background:#f5f5f7;color:#111}.gold{color:#d4af37}
 .hero h1{font-size:32px;font-weight:800}.hero p{color:#666;margin-top:8px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:20px}
 .card{background:#fff;border-radius:16px;padding:20px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.06);cursor:pointer;position:relative}
-.card .av{width:70px;height:70px;border-radius:50%;border:2px solid #d4af37;margin:0 auto 10px;background:#222 center/cover}
+.card .cicon{font-size:26px}
+.card .av{width:70px;height:70px;border-radius:50%;border:2px solid #d4af37;margin:8px auto 10px;background:#222 center/cover}
 .card h3{font-size:16px}.card .st{color:#d4af37;font-size:13px;margin:4px 0}.card .pr{color:#555;font-size:13px}
 .tag{position:absolute;top:10px;right:10px;background:#0a0a0a;color:#fff;font-size:10px;padding:3px 8px;border-radius:10px}
 .hidden{display:none}
@@ -25,13 +26,11 @@ body{background:#f5f5f7;color:#111}.gold{color:#d4af37}
 .cta{background:var(--acc,#d4af37);color:var(--acct,#000);border:none;border-radius:24px;padding:12px 26px;font-size:14px;font-weight:700;cursor:pointer}
 .ghost{background:transparent;color:var(--htext,#fff);border:1px solid var(--acc,#d4af37);border-radius:24px;padding:12px 22px;font-size:14px;cursor:pointer}
 #masterView{--bg:#f5f5f7;--card:#fff;--text:#111;--mut:#666;--line:#eee;--head:#0a0a0a;--htext:#fff;--acc:#d4af37;--acct:#000;background:var(--bg);min-height:100vh}
-#masterView.theme-minimal{--bg:#fff;--card:#fff;--text:#111;--mut:#888;--line:#e5e5e5;--head:#fff;--htext:#111}
-#masterView.theme-neon{--bg:#0b0b14;--card:#161624;--text:#eef;--mut:#99a;--line:#2a2a3d;--head:#0b0b14;--htext:#eef}
-#masterView.theme-craft{--bg:#f3ede4;--card:#fffcf7;--text:#3b2f23;--mut:#8a7a66;--line:#e4daca;--head:#3b2f23;--htext:#f6efe4}
-.pf{background:var(--head);color:var(--htext);border-radius:0 0 20px 20px;padding:50px 20px 30px;text-align:center}
-.pf .av{width:100px;height:100px;border-radius:50%;border:3px solid var(--acc);margin:0 auto 12px;background:#333 center/cover}
+.pf{background:var(--head);color:var(--htext);border-radius:0 0 20px 20px;padding:44px 20px 30px;text-align:center}
+.pf .caticon{font-size:36px}
+.pf .av{width:100px;height:100px;border-radius:50%;border:3px solid var(--acc);margin:10px auto 12px;background:#333 center/cover}
 .pf h1{font-size:24px}
-.pf .role{font-size:13px;margin:4px 0;opacity:.75}
+.pf .role{font-size:13px;margin:4px 0;opacity:.8}
 .rate{color:var(--acc);font-weight:600;margin-top:4px}
 .panel{background:var(--card);color:var(--text);border-radius:16px;padding:20px;box-shadow:0 4px 14px rgba(0,0,0,.06);margin-bottom:16px;animation:up .45s ease both}
 @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
@@ -44,8 +43,6 @@ body{background:#f5f5f7;color:#111}.gold{color:#d4af37}
 .gal img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;cursor:pointer}
 #lb{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;z-index:998;align-items:center;justify-content:center}
 #lb img{max-width:92%;max-height:92%;border-radius:12px}
-.rev{border-bottom:1px solid var(--line);padding:10px 0;font-size:14px}
-.rev .au{font-weight:700}.rev .rt{color:var(--acc)}
 .stories{display:flex;gap:12px;overflow-x:auto;padding:16px 0}
 .story-circle{min-width:70px;text-align:center;cursor:pointer}
 .story-circle .ring{width:66px;height:66px;border-radius:50%;padding:3px;background:linear-gradient(45deg,#f09433,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888);margin:0 auto 4px}
@@ -71,12 +68,12 @@ body{background:#f5f5f7;color:#111}.gold{color:#d4af37}
 <div class="hd"><b onclick="showList()">BLACK TIM <span class="gold">LOCAL</span></b><span><a href="admin.html">Кабинет мастера</a></span></div>
 
 <div id="listView" class="wrap">
- <div class="hero"><h1>НАЙДИ СВОЕГО МАСТЕРА В ТОМСКЕ</h1><p>Проверенные профили · Реальные отзывы · Запись 24/7</p></div>
+ <div class="hero"><h1>НАЙДИ СВОЕГО МАСТЕРА В ТОМСКЕ</h1><p>Проверенные профили · Модерация каждой страницы · Запись 24/7</p></div>
  <div class="grid" id="grid"></div>
 </div>
 
 <div id="masterView" class="hidden">
- <div class="pf"><div class="av" id="mAv"></div>
+ <div class="pf"><div class="caticon" id="mIcon"></div><div class="av" id="mAv"></div>
   <h1 id="mName"></h1><div class="role" id="mRole"></div><div class="rate" id="mRate"></div>
   <div style="margin-top:14px"><button class="cta" onclick="bookForm.scrollIntoView()">ЗАПИСАТЬСЯ ОНЛАЙН</button> <button class="ghost" id="mWa">WhatsApp</button> <button class="ghost" onclick="share()">Поделиться</button></div>
  </div>
@@ -85,13 +82,6 @@ body{background:#f5f5f7;color:#111}.gold{color:#d4af37}
   <div class="panel" id="galPanel" style="display:none"><h2>РАБОТЫ МАСТЕРА</h2><div class="gal" id="galRow"></div></div>
   <div class="panel"><h2>УСЛУГИ И ЦЕНЫ</h2><div id="mSvcs"></div></div>
   <div class="panel"><h2>О МАСТЕРЕ</h2><p id="mDesc"></p></div>
-  <div class="panel"><h2>ОТЗЫВЫ</h2><div id="mRevs"></div>
-   <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px">
-    <input class="inp" id="revName" placeholder="Ваше имя">
-    <input class="inp" id="revText" placeholder="Ваш отзыв">
-    <select class="inp" id="revRate"><option value="5">★★★★★</option><option value="4">★★★★</option><option value="3">★★★</option></select>
-    <button class="cta" onclick="sendReview()">Оставить отзыв</button>
-    <p id="revMsg" class="msg"></p></div></div>
   <div class="panel" id="bookForm"><h2>ЗАПИСЬ ОНЛАЙН</h2>
    <input class="inp" id="bName" placeholder="Ваше имя">
    <input class="inp" id="bPhone" placeholder="Ваш телефон">
@@ -125,37 +115,64 @@ const getS=()=>JSON.parse(localStorage.getItem('blacktim_services')||'[]');
 const getB=()=>JSON.parse(localStorage.getItem('blacktim_bookings')||'[]');
 const getSt=()=>JSON.parse(localStorage.getItem('blacktim_stories')||'[]');
 const getG=()=>JSON.parse(localStorage.getItem('blacktim_gallery')||'[]');
-const getR=()=>JSON.parse(localStorage.getItem('blacktim_reviews')||'[]');
-const DEFACC={blackgold:'#d4af37',minimal:'#111111',neon:'#22d3ee',craft:'#b0713a'};
+const getD=()=>JSON.parse(localStorage.getItem('blacktim_drafts')||'[]');
+const CATS={
+barber:{n:'Барбер',i:'✂️',bg:'#f5f5f7',card:'#fff',text:'#111',mut:'#666',line:'#eee',head:'#0a0a0a',htext:'#fff',acc:'#d4af37'},
+nails:{n:'Маникюр',i:'💅',bg:'#fdf2f8',card:'#fff',text:'#111',mut:'#888',line:'#fce7f3',head:'#be185d',htext:'#fff',acc:'#db2777'},
+hair:{n:'Парикмахер',i:'💇',bg:'#f5f3ff',card:'#fff',text:'#111',mut:'#888',line:'#ede9fe',head:'#6d28d9',htext:'#fff',acc:'#8b5cf6'},
+auto:{n:'Автомеханик',i:'🔧',bg:'#f3f4f6',card:'#fff',text:'#111',mut:'#777',line:'#e5e7eb',head:'#1f2937',htext:'#fff',acc:'#ef4444'},
+taxi:{n:'Такси',i:'🚕',bg:'#fafafa',card:'#fff',text:'#111',mut:'#777',line:'#eee',head:'#111111',htext:'#facc15',acc:'#eab308'},
+cargo:{n:'Грузоперевозки',i:'🚚',bg:'#fff7ed',card:'#fff',text:'#111',mut:'#888',line:'#ffedd5',head:'#9a3412',htext:'#fff',acc:'#fb923c'},
+handy:{n:'Мастер на час',i:'🔨',bg:'#eff6ff',card:'#fff',text:'#111',mut:'#888',line:'#dbeafe',head:'#1e40af',htext:'#fff',acc:'#3b82f6'},
+electric:{n:'Электрик',i:'⚡',bg:'#fffbeb',card:'#fff',text:'#111',mut:'#888',line:'#fef3c7',head:'#78350f',htext:'#fff',acc:'#f59e0b'},
+plumb:{n:'Сантехник',i:'💧',bg:'#ecfeff',card:'#fff',text:'#111',mut:'#888',line:'#cffafe',head:'#0e7490',htext:'#fff',acc:'#06b6d4'},
+photo:{n:'Фотограф',i:'📷',bg:'#f9fafb',card:'#fff',text:'#111',mut:'#888',line:'#e5e7eb',head:'#111827',htext:'#fff',acc:'#4b5563'},
+video:{n:'Видеограф',i:'🎬',bg:'#f0fdfa',card:'#fff',text:'#111',mut:'#888',line:'#ccfbf1',head:'#134e4a',htext:'#fff',acc:'#14b8a6'},
+makeup:{n:'Визажист',i:'💄',bg:'#fff1f2',card:'#fff',text:'#111',mut:'#888',line:'#ffe4e6',head:'#9f1239',htext:'#fff',acc:'#f43f5e'},
+brows:{n:'Брови и ресницы',i:'👁',bg:'#fdf2f8',card:'#fff',text:'#111',mut:'#888',line:'#fce7f3',head:'#831843',htext:'#fff',acc:'#ec4899'},
+tattoo:{n:'Тату',i:'🖋',bg:'#fafafa',card:'#fff',text:'#111',mut:'#888',line:'#eee',head:'#000000',htext:'#fff',acc:'#dc2626'},
+fit:{n:'Тренер',i:'🏋️',bg:'#f0fdf4',card:'#fff',text:'#111',mut:'#888',line:'#dcfce7',head:'#14532d',htext:'#fff',acc:'#22c55e'},
+tutor:{n:'Репетитор',i:'📚',bg:'#eef2ff',card:'#fff',text:'#111',mut:'#888',line:'#e0e7ff',head:'#312e81',htext:'#fff',acc:'#6366f1'},
+cake:{n:'Кондитер',i:'🍰',bg:'#fffbeb',card:'#fff',text:'#111',mut:'#888',line:'#fef3c7',head:'#92400e',htext:'#fff',acc:'#f59e0b'},
+florist:{n:'Флорист',i:'🌸',bg:'#f0fdf4',card:'#fff',text:'#111',mut:'#888',line:'#dcfce7',head:'#166534',htext:'#fff',acc:'#f472b6'},
+pet:{n:'Грумер и питомцы',i:'🐾',bg:'#f0fdfa',card:'#fff',text:'#111',mut:'#888',line:'#ccfbf1',head:'#0f766e',htext:'#fff',acc:'#fb923c'},
+clean:{n:'Клининг',i:'🧽',bg:'#f0f9ff',card:'#fff',text:'#111',mut:'#888',line:'#e0f2fe',head:'#0369a1',htext:'#fff',acc:'#0ea5e9'},
+pc:{n:'Компьютерный мастер',i:'💻',bg:'#f8fafc',card:'#fff',text:'#111',mut:'#888',line:'#e2e8f0',head:'#0f172a',htext:'#fff',acc:'#22d3ee'},
+law:{n:'Юрист',i:'⚖️',bg:'#f8fafc',card:'#fff',text:'#111',mut:'#888',line:'#e2e8f0',head:'#1e3a5f',htext:'#fff',acc:'#d4af37'},
+account:{n:'Бухгалтер',i:'📊',bg:'#ecfdf5',card:'#fff',text:'#111',mut:'#888',line:'#d1fae5',head:'#065f46',htext:'#fff',acc:'#10b981'},
+dj:{n:'DJ и музыка',i:'🎧',bg:'#faf5ff',card:'#fff',text:'#111',mut:'#888',line:'#f3e8ff',head:'#4c1d95',htext:'#fff',acc:'#e879f9'}
+};
 let cur=null,stories=[],curIdx=0,storyTimer=null;
 function lum(hex){const c=hex.replace('#','');const r=parseInt(c.substr(0,2),16),g=parseInt(c.substr(2,2),16),b=parseInt(c.substr(4,2),16);return (0.299*r+0.587*g+0.114*b)/255;}
 function renderList(){
  const ms=getM().filter(m=>m.status==='active');
- grid.innerHTML=ms.length?ms.map(m=>`<div class="card" onclick="showMaster(${m.id})"><span class="tag">Томск</span><div class="av" style="background-image:url('${m.avatar||''}')"></div><h3>${m.name}</h3><div class="st">★★★★★ ${m.rating||'5.0'}</div><div class="pr">${m.price_from?'от '+m.price_from+' ₽':'цена по запросу'}</div>${m.plan==='pro'?'<div style="margin-top:6px"><span class="badge">PRO</span></div>':''}</div>`).join(''):'<p style="color:#888">Пока нет мастеров — добавь первого в super.html</p>';
+ grid.innerHTML=ms.length?ms.map(m=>{const c=CATS[m.template]||CATS.barber;return `<div class="card" onclick="showMaster(${m.id})"><span class="tag">Томск</span><div class="cicon">${c.i}</div><div class="av" style="background-image:url('${m.avatar||''}')"></div><h3>${m.name}</h3><div class="st">${c.n} · ★★★★★ ${m.rating||'5.0'}</div><div class="pr">${m.price_from?'от '+m.price_from+' ₽':'цена по запросу'}</div>${m.plan==='pro'?'<div style="margin-top:6px"><span class="badge">PRO</span></div>':''}</div>`;}).join(''):'<p style="color:#888">Пока нет мастеров — добавь первого в super.html</p>';
 }
 function showMaster(id){
  const all=getM();cur=all.find(m=>m.id===id);if(!cur)return;
- cur.views=(cur.views||0)+1;setM(all);
- const t=cur.template||'blackgold';
- masterView.className='theme-'+t;
- const a=cur.accent||DEFACC[t]||'#d4af37';
- masterView.style.setProperty('--acc',a);
- masterView.style.setProperty('--acct',lum(a)>0.55?'#000':'#fff');
+ const dm=parseInt((location.hash.match(/draft=(\d+)/)||[])[1]||0);
+ const dr=dm?getD().find(x=>x.id===dm&&x.master_id===id):null;
+ const P=dr?Object.assign({},cur,dr.payload.profile):cur;
+ if(!dr){cur.views=(cur.views||0)+1;setM(all);}
+ const c=CATS[P.template]||CATS.barber;
+ ['bg','card','text','mut','line','head','htext','acc'].forEach(k=>masterView.style.setProperty('--'+k,c[k]));
+ const accA=P.accent||c.acc;
+ masterView.style.setProperty('--acc',accA);
+ masterView.style.setProperty('--acct',lum(accA)>0.55?'#000':'#fff');
  listView.classList.add('hidden');
- mAv.style.backgroundImage=cur.avatar?`url('${cur.avatar}')`:'';
- mName.textContent=cur.name;
- mRole.textContent=(cur.category||'Мастер')+' · Томск · '+cur.views+' просмотров';
- mRate.textContent='★★★★★ '+(cur.rating||'5.0')+' ('+(cur.reviews||0)+' отзывов)';
- mDesc.textContent=cur.description||'Описание скоро появится.';
- mWa.onclick=()=>location.href='https://wa.me/'+(cur.whatsapp||'');
- const sv=getS().filter(s=>s.master_id===id);
+ mIcon.textContent=c.i;
+ mAv.style.backgroundImage=P.avatar?`url('${P.avatar}')`:'';
+ mName.textContent=P.name;
+ mRole.textContent=c.n+' · Томск · '+(cur.views||0)+' просмотров'+(dr?' · 👁 ПРЕВЬЮ ИЗМЕНЕНИЙ':'');
+ mRate.textContent='★★★★★ '+(P.rating||'5.0');
+ mDesc.textContent=P.description||'Описание скоро появится.';
+ mWa.onclick=()=>location.href='https://wa.me/'+(P.whatsapp||'');
+ const sv=dr?dr.payload.services:getS().filter(s=>s.master_id===id);
  mSvcs.innerHTML=sv.length?sv.map(s=>`<div class="svc"><span>${s.name}</span><b>${s.price} ₽</b></div>`).join(''):'<p style="color:#888">Услуги скоро появятся</p>';
- const g=getG().filter(x=>x.master_id===id);
+ const g=dr?dr.payload.gallery:getG().filter(x=>x.master_id===id);
  galPanel.style.display=g.length?'block':'none';
  galRow.innerHTML=g.map(x=>`<img src="${x.image}" title="${x.caption||''}" onclick="lbOpen('${x.image}')">`).join('');
- const rv=getR().filter(x=>x.master_id===id&&x.status==='ok');
- mRevs.innerHTML=rv.length?rv.map(x=>`<div class="rev"><span class="au">${x.author}</span> <span class="rt">${'★'.repeat(x.rating)}</span><br>${x.text}</div>`).join(''):'<p style="color:#888">Отзывов пока нет — будьте первым!</p>';
- stories=getSt().filter(s=>s.master_id===id);
+ stories=dr?dr.payload.stories:getSt().filter(s=>s.master_id===id);
  storiesPanel.style.display=stories.length?'block':'none';
  if(stories.length)storiesRow.innerHTML=stories.map((s,i)=>`<div class="story-circle" onclick="openViewer(${i})"><div class="ring"><div class="img" style="background-image:url('${s.image}')"></div></div><div class="cap">${s.caption||'История'}</div></div>`).join('');
  scrollTo(0,0);
@@ -165,15 +182,7 @@ function showList(){masterView.classList.add('hidden');listView.classList.remove
 function share(){
  const url=location.href.split('#')[0]+'#m'+cur.id;
  if(navigator.share){navigator.share({title:cur.name,text:'Страница мастера на Black Tim Local',url});}
- else{navigator.clipboard.writeText(url).then(()=>alert('✅ Ссылка скопирована — отправляй кому хочешь!'));}
-}
-function sendReview(){
- const n=revName.value,t=revText.value;
- if(!n||!t){revMsg.textContent='Заполни имя и текст';return;}
- const r=getR();r.push({id:Date.now(),master_id:cur.id,author:n,text:t,rating:+revRate.value,status:'pending'});
- localStorage.setItem('blacktim_reviews',JSON.stringify(r));
- revMsg.textContent='✅ Отзыв отправлен и появится после модерации';
- revName.value='';revText.value='';
+ else{navigator.clipboard.writeText(url).then(()=>alert('✅ Ссылка скопирована!'));}
 }
 function sendBooking(){
  const n=bName.value,p=bPhone.value,d=bDate.value;
