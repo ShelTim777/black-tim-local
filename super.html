@@ -6,35 +6,36 @@
 <title>Супер-админка Black Tim</title>
 <style>
   body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f4f4; padding: 20px; margin: 0; }
-  .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+  .container { max-width: 860px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
   h1 { color: #111; border-bottom: 2px solid #d4af37; padding-bottom: 10px; margin-top: 0; }
-  .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; }
+  .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; }
   .btn-add { background: #d4af37; color: #000; }
-  .btn-add:hover { background: #b5952f; }
   .btn-del { background: #e74c3c; color: #fff; }
   .btn-edit { background: #3498db; color: #fff; margin-right: 5px; }
-  table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-  th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-  th { background: #111; color: #d4af37; font-weight: 600; }
+  .btn-ok { background: #27ae60; color: #fff; margin-right: 5px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+  th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
+  th { background: #111; color: #d4af37; }
   .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100; }
-  .modal-content { background: #fff; margin: 10% auto; padding: 25px; width: 90%; max-width: 400px; border-radius: 12px; position: relative; }
+  .modal-content { background: #fff; margin: 8% auto; padding: 25px; width: 90%; max-width: 400px; border-radius: 12px; position: relative; }
   .close { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: #888; }
-  input, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+  input, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
   label { font-size: 12px; color: #666; font-weight: bold; }
+  .panel2 { background: #fafafa; border: 1px solid #eee; border-radius: 10px; padding: 15px; margin-top: 20px; }
 </style>
 </head>
 <body>
-
 <div class="container">
   <h1>Супер-админка Black Tim Local</h1>
-  <p style="color: #666; font-size: 14px;">Управление мастерами платформы (Тестовый режим)</p>
   <button class="btn btn-add" onclick="openModal()">+ Добавить мастера</button>
   <table id="mastersTable">
-    <thead>
-      <tr><th>Имя</th><th>Ниша</th><th>Телефон</th><th>Статус</th><th>Действия</th></tr>
-    </thead>
+    <thead><tr><th>Имя</th><th>Ниша</th><th>Просмотры</th><th>Статус</th><th>Действия</th></tr></thead>
     <tbody></tbody>
   </table>
+  <div class="panel2">
+    <h2 style="margin-top:0">💬 Отзывы на модерации</h2>
+    <div id="revPend"></div>
+  </div>
 </div>
 
 <div id="modal" class="modal">
@@ -42,20 +43,17 @@
     <span class="close" onclick="closeModal()">&times;</span>
     <h2 id="modalTitle" style="margin-top:0;">Мастер</h2>
     <input type="hidden" id="masterId">
-    <label>Имя и Фамилия</label>
-    <input type="text" id="name" placeholder="Иван Петров">
-    <label>Ниша (Категория)</label>
-    <input type="text" id="category" placeholder="Барберы, Авто, Ремонт...">
-    <label>Телефон / WhatsApp</label>
-    <input type="text" id="phone" placeholder="+7 900 123-45-67">
+    <label>Имя и Фамилия</label><input type="text" id="name" placeholder="Иван Петров">
+    <label>Ниша</label><input type="text" id="category" placeholder="Барберы, Авто...">
+    <label>Телефон</label><input type="text" id="phone" placeholder="+7 900 ...">
     <label>Статус</label>
     <select id="status">
-      <option value="active">🟢 Активен (виден на сайте)</option>
+      <option value="active">🟢 Активен</option>
       <option value="blocked">🔴 Заблокирован</option>
       <option value="pending">На модерации</option>
     </select>
-    <div style="margin-top: 15px; text-align: right;">
-      <button class="btn" onclick="closeModal()" style="background:#eee; margin-right: 10px;">Отмена</button>
+    <div style="margin-top:15px;text-align:right">
+      <button class="btn" onclick="closeModal()" style="background:#eee;margin-right:10px">Отмена</button>
       <button class="btn btn-add" onclick="saveMaster()">Сохранить</button>
     </div>
   </div>
@@ -65,74 +63,56 @@
   let masters = JSON.parse(localStorage.getItem('blacktim_masters')) || [
     {id: 1, name: 'Иван Петров', category: 'Барберы', phone: '+7 900 123-45-67', status: 'active'}
   ];
+  const getR=()=>JSON.parse(localStorage.getItem('blacktim_reviews')||'[]');
+  const setR=a=>localStorage.setItem('blacktim_reviews',JSON.stringify(a));
 
   function render() {
-    const tbody = document.querySelector('#mastersTable tbody');
-    tbody.innerHTML = masters.map(m => `
+    masters = JSON.parse(localStorage.getItem('blacktim_masters')) || masters;
+    document.querySelector('#mastersTable tbody').innerHTML = masters.map(m => `
       <tr>
         <td><b>${m.name}</b></td>
-        <td>${m.category}</td>
-        <td>${m.phone}</td>
-        <td>${m.status === 'active' ? '🟢 Активен' : (m.status === 'blocked' ? '🔴 Заблок.' : 'На модерации')}</td>
+        <td>${m.category||'—'}</td>
+        <td>${m.views||0}</td>
+        <td>${m.status === 'active' ? '🟢 Активен' : (m.status === 'blocked' ? '🔴 Заблок.' : 'Модерация')}</td>
         <td>
           <button class="btn btn-edit" onclick="editMaster(${m.id})">Изменить</button>
           <button class="btn btn-del" onclick="deleteMaster(${m.id})">Удалить</button>
         </td>
-      </tr>
-    `).join('');
+      </tr>`).join('');
     localStorage.setItem('blacktim_masters', JSON.stringify(masters));
+    const pend = getR().filter(r=>r.status==='pending');
+    revPend.innerHTML = pend.length ? pend.map(r=>{
+      const m = masters.find(x=>x.id===r.master_id);
+      return `<div style="border-bottom:1px solid #eee;padding:10px 0">
+        <b>${r.author}</b> → ${m?m.name:'?'} · ${'★'.repeat(r.rating)}<br>${r.text}<br>
+        <button class="btn btn-ok" onclick="revSet(${r.id},'ok')">Одобрить</button>
+        <button class="btn btn-del" onclick="revSet(${r.id},'no')">Отклонить</button></div>`;
+    }).join('') : '<p style="color:#888">Новых отзывов нет</p>';
   }
-
+  function revSet(id,st){setR(getR().map(r=>r.id===id?Object.assign(r,{status:st}):r));render();}
   function openModal(id = null) {
     document.getElementById('modal').style.display = 'block';
     if(id) {
       const m = masters.find(x => x.id === id);
-      document.getElementById('masterId').value = m.id;
-      document.getElementById('name').value = m.name;
-      document.getElementById('category').value = m.category;
-      document.getElementById('phone').value = m.phone;
-      document.getElementById('status').value = m.status;
-      document.getElementById('modalTitle').innerText = 'Редактировать мастера';
+      masterId.value = m.id; name.value = m.name; category.value = m.category||''; phone.value = m.phone||''; status.value = m.status;
+      modalTitle.innerText = 'Редактировать мастера';
     } else {
-      document.getElementById('masterId').value = '';
-      document.getElementById('name').value = '';
-      document.getElementById('category').value = '';
-      document.getElementById('phone').value = '';
-      document.getElementById('status').value = 'active';
-      document.getElementById('modalTitle').innerText = 'Новый мастер';
+      masterId.value=''; name.value=''; category.value=''; phone.value=''; status.value='active';
+      modalTitle.innerText = 'Новый мастер';
     }
   }
-
-  function closeModal() { document.getElementById('modal').style.display = 'none'; }
-
+  function closeModal() { modal.style.display = 'none'; }
   function saveMaster() {
-    const id = document.getElementById('masterId').value;
-    const newM = {
-      id: id ? parseInt(id) : Date.now(),
-      name: document.getElementById('name').value,
-      category: document.getElementById('category').value,
-      phone: document.getElementById('phone').value,
-      status: document.getElementById('status').value
-    };
+    const id = masterId.value;
+    const newM = { id: id ? parseInt(id) : Date.now(), name: name.value, category: category.value, phone: phone.value, status: status.value };
     if(!newM.name || !newM.category) { alert('Заполни имя и нишу!'); return; }
-    if(id) {
-      masters = masters.map(m => m.id === newM.id ? newM : m);
-    } else {
-      masters.push(newM);
-    }
-    render();
-    closeModal();
+    if(id) { masters = masters.map(m => { if(m.id===newM.id){ return Object.assign(m,newM); } return m; }); }
+    else { masters.push(newM); }
+    render(); closeModal();
   }
-
   function editMaster(id) { openModal(id); }
-  function deleteMaster(id) {
-    if(confirm('Точно удалить этого мастера?')) {
-      masters = masters.filter(m => m.id !== id);
-      render();
-    }
-  }
+  function deleteMaster(id) { if(confirm('Точно удалить мастера?')) { masters = masters.filter(m => m.id !== id); render(); } }
   render();
 </script>
-
 </body>
 </html>
