@@ -22,8 +22,9 @@ body{background:#f5f5f7;color:#111}.gold{color:#d4af37}
 .badge{display:inline-block;background:#d4af37;color:#000;font-size:10px;padding:2px 8px;border-radius:8px;font-weight:700}
 .msg{font-size:13px;margin-top:8px}
 .inp{width:100%;padding:11px;border:1px solid #ddd;border-radius:10px;font-size:14px;margin:6px 0}
+.cta{background:var(--acc,#d4af37);color:var(--acct,#000);border:none;border-radius:24px;padding:12px 26px;font-size:14px;font-weight:700;cursor:pointer}
+.ghost{background:transparent;color:var(--htext,#fff);border:1px solid var(--acc,#d4af37);border-radius:24px;padding:12px 22px;font-size:14px;cursor:pointer}
 
-/* === СТРАНИЦА МАСТЕРА: ШАБЛОНЫ === */
 #masterView{--bg:#f5f5f7;--card:#fff;--text:#111;--mut:#666;--line:#eee;--head:#0a0a0a;--htext:#fff;--acc:#d4af37;--acct:#000;background:var(--bg);min-height:100vh}
 #masterView.theme-minimal{--bg:#fff;--card:#fff;--text:#111;--mut:#888;--line:#e5e5e5;--head:#fff;--htext:#111}
 #masterView.theme-neon{--bg:#0b0b14;--card:#161624;--text:#eef;--mut:#99a;--line:#2a2a3d;--head:#0b0b14;--htext:#eef}
@@ -33,14 +34,37 @@ body{background:#f5f5f7;color:#111}.gold{color:#d4af37}
 .pf h1{font-size:24px}
 .pf .role{font-size:13px;margin:4px 0;opacity:.75}
 .rate{color:var(--acc);font-weight:600;margin-top:4px}
-.cta{background:var(--acc);color:var(--acct);border:none;border-radius:24px;padding:12px 26px;font-size:14px;font-weight:700;cursor:pointer}
-.ghost{background:transparent;color:var(--htext);border:1px solid var(--acc);border-radius:24px;padding:12px 22px;font-size:14px;cursor:pointer}
 .panel{background:var(--card);color:var(--text);border-radius:16px;padding:20px;box-shadow:0 4px 14px rgba(0,0,0,.06);margin-bottom:16px}
 .panel h2{font-size:16px;margin-bottom:12px;color:var(--text)}
 .svc{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
 .svc b{font-family:monospace;color:var(--acc)}
 #mDesc{color:var(--mut);font-size:14px}
 .foot{text-align:center;color:var(--mut);font-size:11px}
+
+/* === ИСТОРИИ === */
+.stories{display:flex;gap:12px;overflow-x:auto;padding:16px 0;margin-bottom:16px}
+.story-circle{min-width:70px;text-align:center;cursor:pointer}
+.story-circle .ring{width:66px;height:66px;border-radius:50%;padding:3px;background:linear-gradient(45deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);margin:0 auto 4px}
+.story-circle .ring.seen{background:#ccc}
+.story-circle .img{width:100%;height:100%;border-radius:50%;border:3px solid var(--bg);background:#ddd center/cover}
+.story-circle .cap{font-size:10px;color:var(--mut);max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* === ПОЛНОЭКРАННЫЙ ПРОСМОТР === */
+.story-viewer{display:none;position:fixed;inset:0;background:#000;z-index:999;flex-direction:column}
+.story-viewer.active{display:flex}
+.story-header{position:absolute;top:0;left:0;right:0;padding:12px 16px;background:linear-gradient(180deg,rgba(0,0,0,.6) 0%,transparent 100%);z-index:2}
+.story-progress{display:flex;gap:4px;margin-bottom:8px}
+.story-progress .bar{flex:1;height:2px;background:rgba(255,255,255,.3);border-radius:1px;overflow:hidden}
+.story-progress .bar .fill{height:100%;background:#fff;width:0;transition:width .1s linear}
+.story-info{display:flex;align-items:center;gap:10px;color:#fff;font-size:13px}
+.story-info .av{width:32px;height:32px;border-radius:50%;background:#333 center/cover}
+.story-close{position:absolute;top:12px;right:16px;background:none;border:none;color:#fff;font-size:28px;cursor:pointer;z-index:3}
+.story-content{flex:1;display:flex;align-items:center;justify-content:center;position:relative}
+.story-content img{max-width:100%;max-height:100%;object-fit:contain}
+.story-caption{position:absolute;bottom:80px;left:0;right:0;text-align:center;color:#fff;font-size:16px;text-shadow:0 2px 4px rgba(0,0,0,.8)}
+.story-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);border:none;color:#fff;font-size:32px;padding:12px 16px;border-radius:50%;cursor:pointer}
+.story-nav.prev{left:16px}
+.story-nav.next{right:16px}
 </style>
 </head>
 <body>
@@ -57,6 +81,7 @@ body{background:#f5f5f7;color:#111}.gold{color:#d4af37}
   <div style="margin-top:14px"><button class="cta" onclick="bookForm.scrollIntoView()">ЗАПИСАТЬСЯ ОНЛАЙН</button> <button class="ghost" id="mWa">WhatsApp</button></div>
  </div>
  <div class="wrap">
+  <div class="panel" id="storiesPanel" style="display:none"><div class="stories" id="storiesRow"></div></div>
   <div class="panel"><h2>УСЛУГИ И ЦЕНЫ</h2><div id="mSvcs"></div></div>
   <div class="panel"><h2>О МАСТЕРЕ</h2><p id="mDesc"></p></div>
   <div class="panel" id="bookForm"><h2>ЗАПИСЬ ОНЛАЙН</h2>
@@ -69,12 +94,27 @@ body{background:#f5f5f7;color:#111}.gold{color:#d4af37}
  </div>
 </div>
 
+<div class="story-viewer" id="storyViewer">
+ <div class="story-header">
+  <div class="story-progress" id="storyProgress"></div>
+  <div class="story-info"><div class="av" id="svAv"></div><span id="svName"></span></div>
+ </div>
+ <button class="story-close" onclick="closeViewer()">×</button>
+ <div class="story-content" id="storyContent">
+  <img id="svImg" src="">
+  <div class="story-caption" id="svCap"></div>
+ </div>
+ <button class="story-nav prev" onclick="prevStory()">‹</button>
+ <button class="story-nav next" onclick="nextStory()">›</button>
+</div>
+
 <script>
 const getM=()=>JSON.parse(localStorage.getItem('blacktim_masters')||'[]');
 const getS=()=>JSON.parse(localStorage.getItem('blacktim_services')||'[]');
 const getB=()=>JSON.parse(localStorage.getItem('blacktim_bookings')||'[]');
+const getSt=()=>JSON.parse(localStorage.getItem('blacktim_stories')||'[]');
 const DEFACC={blackgold:'#d4af37',minimal:'#111111',neon:'#22d3ee',craft:'#b0713a'};
-let cur=null;
+let cur=null,stories=[],curIdx=0,storyTimer=null;
 function lum(hex){const c=hex.replace('#','');const r=parseInt(c.substr(0,2),16),g=parseInt(c.substr(2,2),16),b=parseInt(c.substr(4,2),16);return (0.299*r+0.587*g+0.114*b)/255;}
 function renderList(){
  const ms=getM().filter(m=>m.status==='active');
@@ -95,6 +135,11 @@ function showMaster(id){
  mWa.onclick=()=>location.href='https://wa.me/'+(cur.whatsapp||'');
  const sv=getS().filter(s=>s.master_id===id);
  mSvcs.innerHTML=sv.length?sv.map(s=>`<div class="svc"><span>${s.name}</span><b>${s.price} ₽</b></div>`).join(''):'<p style="color:#888">Услуги скоро появятся</p>';
+ stories=getSt().filter(s=>s.master_id===id);
+ if(stories.length){
+  storiesPanel.style.display='block';
+  storiesRow.innerHTML=stories.map((s,i)=>`<div class="story-circle" onclick="openViewer(${i})"><div class="ring"><div class="img" style="background-image:url(${s.image})"></div></div><div class="cap">${s.caption||'История'}</div></div>`).join('');
+ }else{storiesPanel.style.display='none';}
  scrollTo(0,0);
 }
 function showList(){masterView.classList.add('hidden');listView.classList.remove('hidden');renderList();}
@@ -106,6 +151,30 @@ function sendBooking(){
  bMsg.textContent='✅ Заявка отправлена! Она уже в кабинете мастера.';
  bName.value='';bPhone.value='';
 }
+function openViewer(idx){
+ curIdx=idx;storyViewer.classList.add('active');
+ svName.textContent=cur.name;
+ showStory();
+}
+function showStory(){
+ if(curIdx<0||curIdx>=stories.length){closeViewer();return;}
+ const s=stories[curIdx];
+ svImg.src=s.image;svCap.textContent=s.caption||'';
+ const prog=storyProgress;
+ prog.innerHTML=stories.map((_,i)=>`<div class="bar"><div class="fill" id="bar${i}"></div></div>`).join('');
+ document.getElementById('bar'+curIdx).style.width='0%';
+ clearInterval(storyTimer);
+ let pct=0;
+ storyTimer=setInterval(()=>{
+  pct+=2;
+  document.getElementById('bar'+curIdx).style.width=pct+'%';
+  if(pct>=100){clearInterval(storyTimer);nextStory();}
+ },100);
+}
+function nextStory(){curIdx++;showStory();}
+function prevStory(){curIdx--;showStory();}
+function closeViewer(){storyViewer.classList.remove('active');clearInterval(storyTimer);}
+document.addEventListener('keydown',e=>{if(!storyViewer.classList.contains('active'))return;if(e.key==='ArrowRight')nextStory();if(e.key==='ArrowLeft')prevStory();if(e.key==='Escape')closeViewer();});
 renderList();
 if(location.hash.startsWith('#m')){const id=parseInt(location.hash.slice(2));if(id)showMaster(id);}
 </script>
