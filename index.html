@@ -18,56 +18,76 @@ body{background:#f5f5f7;color:#111}.gold{color:#d4af37}
 .card .av{width:70px;height:70px;border-radius:50%;border:2px solid #d4af37;margin:0 auto 10px;background:#222}
 .card h3{font-size:16px}.card .st{color:#d4af37;font-size:13px;margin:4px 0}.card .pr{color:#555;font-size:13px}
 .tag{position:absolute;top:10px;right:10px;background:#0a0a0a;color:#fff;font-size:10px;padding:3px 8px;border-radius:10px}
-.btn{background:#0a0a0a;color:#fff;border:none;border-radius:24px;padding:12px 26px;font-size:14px;font-weight:600;cursor:pointer}
-.btn.g{background:#d4af37;color:#000}.btn.sm{padding:6px 12px;font-size:11px}.btn.red{background:#c0392b}
-.inp{width:100%;padding:11px;border:1px solid #ddd;border-radius:10px;font-size:14px;margin:6px 0}
-.panel{background:#fff;border-radius:16px;padding:20px;box-shadow:0 4px 14px rgba(0,0,0,.06);margin-bottom:16px}
-.panel h2{font-size:16px;margin-bottom:12px}
-.pf{background:#0a0a0a;color:#fff;border-radius:0 0 20px 20px;padding:50px 20px 30px;text-align:center}
-.pf .av{width:100px;height:100px;border-radius:50%;border:3px solid #d4af37;margin:0 auto 12px;background:#333}
-.pf h1{font-size:24px}.pf .role{color:#bbb;font-size:13px;margin:4px 0}
-.svc{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee;font-size:14px}
-.svc b{font-family:monospace}
 .hidden{display:none}
 .badge{display:inline-block;background:#d4af37;color:#000;font-size:10px;padding:2px 8px;border-radius:8px;font-weight:700}
 .msg{font-size:13px;margin-top:8px}
+.inp{width:100%;padding:11px;border:1px solid #ddd;border-radius:10px;font-size:14px;margin:6px 0}
+
+/* === СТРАНИЦА МАСТЕРА: ШАБЛОНЫ === */
+#masterView{--bg:#f5f5f7;--card:#fff;--text:#111;--mut:#666;--line:#eee;--head:#0a0a0a;--htext:#fff;--acc:#d4af37;--acct:#000;background:var(--bg);min-height:100vh}
+#masterView.theme-minimal{--bg:#fff;--card:#fff;--text:#111;--mut:#888;--line:#e5e5e5;--head:#fff;--htext:#111}
+#masterView.theme-neon{--bg:#0b0b14;--card:#161624;--text:#eef;--mut:#99a;--line:#2a2a3d;--head:#0b0b14;--htext:#eef}
+#masterView.theme-craft{--bg:#f3ede4;--card:#fffcf7;--text:#3b2f23;--mut:#8a7a66;--line:#e4daca;--head:#3b2f23;--htext:#f6efe4}
+.pf{background:var(--head);color:var(--htext);border-radius:0 0 20px 20px;padding:50px 20px 30px;text-align:center}
+.pf .av{width:100px;height:100px;border-radius:50%;border:3px solid var(--acc);margin:0 auto 12px;background:#333}
+.pf h1{font-size:24px}
+.pf .role{font-size:13px;margin:4px 0;opacity:.75}
+.rate{color:var(--acc);font-weight:600;margin-top:4px}
+.cta{background:var(--acc);color:var(--acct);border:none;border-radius:24px;padding:12px 26px;font-size:14px;font-weight:700;cursor:pointer}
+.ghost{background:transparent;color:var(--htext);border:1px solid var(--acc);border-radius:24px;padding:12px 22px;font-size:14px;cursor:pointer}
+.panel{background:var(--card);color:var(--text);border-radius:16px;padding:20px;box-shadow:0 4px 14px rgba(0,0,0,.06);margin-bottom:16px}
+.panel h2{font-size:16px;margin-bottom:12px;color:var(--text)}
+.svc{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+.svc b{font-family:monospace;color:var(--acc)}
+#mDesc{color:var(--mut);font-size:14px}
+.foot{text-align:center;color:var(--mut);font-size:11px}
 </style>
 </head>
 <body>
 <div class="hd"><b onclick="showList()">BLACK TIM <span class="gold">LOCAL</span></b><span><a href="admin.html">Кабинет мастера</a></span></div>
+
 <div id="listView" class="wrap">
  <div class="hero"><h1>НАЙДИ СВОЕГО МАСТЕРА В ТОМСКЕ</h1><p>Проверенные профили · Реальные отзывы · Запись 24/7</p></div>
  <div class="grid" id="grid"></div>
 </div>
+
 <div id="masterView" class="hidden">
  <div class="pf"><div class="av"></div>
-  <h1 id="mName"></h1><div class="role" id="mRole"></div><div class="gold" id="mRate"></div>
-  <div style="margin-top:14px"><button class="btn g" onclick="bookForm.scrollIntoView()">ЗАПИСАТЬСЯ ОНЛАЙН</button> <button class="btn" id="mWa">WhatsApp</button></div>
+  <h1 id="mName"></h1><div class="role" id="mRole"></div><div class="rate" id="mRate"></div>
+  <div style="margin-top:14px"><button class="cta" onclick="bookForm.scrollIntoView()">ЗАПИСАТЬСЯ ОНЛАЙН</button> <button class="ghost" id="mWa">WhatsApp</button></div>
  </div>
  <div class="wrap">
   <div class="panel"><h2>УСЛУГИ И ЦЕНЫ</h2><div id="mSvcs"></div></div>
-  <div class="panel"><h2>О МАСТЕРЕ</h2><p id="mDesc" style="font-size:14px;color:#555"></p></div>
+  <div class="panel"><h2>О МАСТЕРЕ</h2><p id="mDesc"></p></div>
   <div class="panel" id="bookForm"><h2>ЗАПИСЬ ОНЛАЙН</h2>
    <input class="inp" id="bName" placeholder="Ваше имя">
    <input class="inp" id="bPhone" placeholder="Ваш телефон">
    <input class="inp" id="bDate" type="date">
-   <button class="btn" onclick="sendBooking()">ОТПРАВИТЬ ЗАЯВКУ</button>
+   <button class="cta" onclick="sendBooking()">ОТПРАВИТЬ ЗАЯВКУ</button>
    <p id="bMsg" class="msg"></p></div>
-  <div class="panel" style="text-align:center;color:#999;font-size:11px">Работает на BLACK TIM LOCAL™</div>
+  <div class="panel foot">Работает на BLACK TIM LOCAL™</div>
  </div>
 </div>
+
 <script>
 const getM=()=>JSON.parse(localStorage.getItem('blacktim_masters')||'[]');
 const getS=()=>JSON.parse(localStorage.getItem('blacktim_services')||'[]');
 const getB=()=>JSON.parse(localStorage.getItem('blacktim_bookings')||'[]');
+const DEFACC={blackgold:'#d4af37',minimal:'#111111',neon:'#22d3ee',craft:'#b0713a'};
 let cur=null;
+function lum(hex){const c=hex.replace('#','');const r=parseInt(c.substr(0,2),16),g=parseInt(c.substr(2,2),16),b=parseInt(c.substr(4,2),16);return (0.299*r+0.587*g+0.114*b)/255;}
 function renderList(){
  const ms=getM().filter(m=>m.status==='active');
  grid.innerHTML=ms.length?ms.map(m=>`<div class="card" onclick="showMaster(${m.id})"><span class="tag">Томск</span><div class="av"></div><h3>${m.name}</h3><div class="st">★★★★★ ${m.rating||'5.0'}</div><div class="pr">${m.price_from?'от '+m.price_from+' ₽':'цена по запросу'}</div>${m.plan==='pro'?'<div style="margin-top:6px"><span class="badge">PRO</span></div>':''}</div>`).join(''):'<p style="color:#888">Пока нет мастеров — добавь первого в super.html</p>';
 }
 function showMaster(id){
  cur=getM().find(m=>m.id===id);if(!cur)return;
- listView.classList.add('hidden');masterView.classList.remove('hidden');
+ const t=cur.template||'blackgold';
+ masterView.className='theme-'+t;
+ const a=cur.accent||DEFACC[t]||'#d4af37';
+ masterView.style.setProperty('--acc',a);
+ masterView.style.setProperty('--acct',lum(a)>0.55?'#000':'#fff');
+ listView.classList.add('hidden');
  mName.textContent=cur.name;
  mRole.textContent=(cur.category||'Мастер')+' · Томск';
  mRate.textContent='★★★★★ '+(cur.rating||'5.0')+' ('+(cur.reviews||0)+' отзывов)';
@@ -87,7 +107,7 @@ function sendBooking(){
  bName.value='';bPhone.value='';
 }
 renderList();
-if(location.hash.startsWith('#m')){const id=+location.hash.slice(2);if(id)showMaster(id);}
+if(location.hash.startsWith('#m')){const id=parseInt(location.hash.slice(2));if(id)showMaster(id);}
 </script>
 </body>
 </html>
