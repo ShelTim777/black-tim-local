@@ -24,6 +24,11 @@ body{background:#f5f5f7;color:#111}.gold{color:#d4af37}
 .tpl.on{border-color:#d4af37}
 .acc{width:30px;height:30px;border-radius:50%;cursor:pointer;border:3px solid transparent}
 .acc.on{border-color:#111}
+.story-item{display:flex;gap:10px;align-items:center;padding:10px;border:1px solid #eee;border-radius:10px;margin-bottom:8px}
+.story-item img{width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid #d4af37}
+.story-item .info{flex:1}
+.story-item .cap{font-size:13px;font-weight:600}
+.story-item .date{font-size:11px;color:#888}
 </style>
 </head>
 <body>
@@ -42,6 +47,7 @@ body{background:#f5f5f7;color:#111}.gold{color:#d4af37}
   <div class="stat"><b id="sNew">0</b><span>НОВЫХ ЗАЯВОК</span></div>
   <div class="stat"><b id="sAll">0</b><span>ВСЕГО ЗАЯВОК</span></div>
   <div class="stat"><b id="sSvc">0</b><span>УСЛУГ</span></div>
+  <div class="stat"><b id="sSt">0</b><span>ИСТОРИЙ</span></div>
  </div>
  <div class="panel"><h2>ЗАЯВКИ НА ЗАПИСЬ</h2><div id="bkList"></div></div>
 
@@ -51,7 +57,14 @@ body{background:#f5f5f7;color:#111}.gold{color:#d4af37}
   <p class="msg" style="margin:12px 0 6px">Акцентный цвет:</p>
   <div id="accRow" style="display:flex;gap:8px;flex-wrap:wrap"></div>
   <div style="margin-top:14px"><button class="btn g" onclick="preview()">👁 ЖИВОЙ ПРЕВЬЮ</button></div>
-  <p class="msg" style="color:#888">Шаблон и цвет применяются к твоей странице после «Сохранить» в профиле ниже</p>
+ </div>
+
+ <div class="panel"><h2>📸 ИСТОРИИ (как в Instagram)</h2>
+  <p class="msg" style="margin:0 0 10px">Добавь фото работ, процессов, отзывов — кружочки появятся сверху твоей страницы</p>
+  <input type="file" id="stFile" accept="image/*" class="inp" onchange="uploadStory()">
+  <input class="inp" id="stCap" placeholder="Подпись (напр. «Новая стрижка для клиента»)">
+  <button class="btn g" onclick="saveStory()" style="width:100%">+ Добавить историю</button>
+  <div id="stList" style="margin-top:14px"></div>
  </div>
 
  <div class="panel"><h2>МОЙ ПРОФИЛЬ</h2>
@@ -87,6 +100,8 @@ const getS=()=>JSON.parse(localStorage.getItem('blacktim_services')||'[]');
 const setS=a=>localStorage.setItem('blacktim_services',JSON.stringify(a));
 const getB=()=>JSON.parse(localStorage.getItem('blacktim_bookings')||'[]');
 const setB=a=>localStorage.setItem('blacktim_bookings',JSON.stringify(a));
+const getSt=()=>JSON.parse(localStorage.getItem('blacktim_stories')||'[]');
+const setSt=a=>localStorage.setItem('blacktim_stories',JSON.stringify(a));
 const TPLS=[
  {id:'blackgold',name:'Чёрное золото',css:'linear-gradient(135deg,#0a0a0a 55%,#d4af37)'},
  {id:'minimal',name:'Минимал',css:'linear-gradient(135deg,#ffffff 55%,#111)'},
@@ -94,7 +109,7 @@ const TPLS=[
  {id:'craft',name:'Крафт',css:'linear-gradient(135deg,#3b2f23 55%,#b0713a)'}
 ];
 const ACCS=['#d4af37','#c0c0c0','#e74c3c','#2f6df6','#27ae60','#22d3ee'];
-let ME=null,tpl='blackgold',acc=null;
+let ME=null,tpl='blackgold',acc=null,stImg=null;
 
 function fillSel(){sel.innerHTML=getM().map(m=>`<option value="${m.id}">${m.name} (${m.category||'без ниши'})</option>`).join('')||'<option>Нет мастеров</option>';}
 function enter(){ME=getM().find(m=>m.id===+sel.value);if(!ME)return;localStorage.setItem('bt_session',ME.id);cab();}
@@ -105,6 +120,22 @@ function renderTpl(){
 function pickTpl(id){tpl=id;renderTpl();}
 function pickAcc(c){acc=(acc===c?null:c);renderTpl();}
 function preview(){pvFrame.src='index.html#m'+ME.id+'&x='+Date.now();pvModal.style.display='block';}
+function uploadStory(){
+ const f=stFile.files[0];if(!f)return;
+ const r=new FileReader();
+ r.onload=e=>{stImg=e.target.result;};
+ r.readAsDataURL(f);
+}
+function saveStory(){
+ if(!stImg){alert('Выбери фото');return;}
+ const cap=stCap.value||'История';
+ const a=getSt();
+ a.push({id:Date.now(),master_id:ME.id,image:stImg,caption:cap,created_at:new Date().toISOString()});
+ setSt(a);
+ stImg=null;stFile.value='';stCap.value='';
+ cab();
+}
+function delStory(id){if(confirm('Удалить историю?')){setSt(getSt().filter(s=>s.id!==id));cab();}}
 function cab(){
  authView.classList.add('hidden');cabView.classList.remove('hidden');
  hdr.textContent=ME.name;
@@ -115,9 +146,12 @@ function cab(){
  const bk=getB().filter(b=>b.master_id===ME.id);
  sAll.textContent=bk.length;sNew.textContent=bk.filter(b=>b.status==='new').length;
  sSvc.textContent=getS().filter(s=>s.master_id===ME.id).length;
+ const st=getSt().filter(s=>s.master_id===ME.id);
+ sSt.textContent=st.length;
  bkList.innerHTML=bk.length?bk.map(b=>`<div class="row"><span><b>${b.client_name}</b> · ${b.client_phone} · ${b.date}</span><span>${b.status==='new'?`<button class="btn sm g" onclick="setBk(${b.id},'ok')">Принять</button> <button class="btn sm red" onclick="setBk(${b.id},'no')">Отклонить</button>`:(b.status==='ok'?'✅ Принята':'❌ Отклонена')}</span></div>`).join(''):'<p style="color:#888">Заявок пока нет</p>';
  const sv=getS().filter(s=>s.master_id===ME.id);
  svcList.innerHTML=sv.length?sv.map(s=>`<div class="row"><span>${s.name}</span><span><b>${s.price}₽</b> <button class="btn sm red" onclick="delSvc(${s.id})">×</button></span></div>`).join(''):'<p style="color:#888">Услуг нет — добавь ниже</p>';
+ stList.innerHTML=st.length?st.map(s=>`<div class="story-item"><img src="${s.image}"><div class="info"><div class="cap">${s.caption}</div><div class="date">${new Date(s.created_at).toLocaleDateString('ru')}</div></div><button class="btn sm red" onclick="delStory(${s.id})">×</button></div>`).join(''):'<p style="color:#888">Историй нет — добавь первую выше</p>';
 }
 function setBk(id,st){setB(getB().map(b=>b.id===id?Object.assign(b,{status:st}):b));cab();}
 function saveProfile(){
