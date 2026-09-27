@@ -6,13 +6,14 @@
 <title>Супер-админка Black Tim</title>
 <style>
   body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f4f4; padding: 20px; margin: 0; }
-  .container { max-width: 860px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+  .container { max-width: 900px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
   h1 { color: #111; border-bottom: 2px solid #d4af37; padding-bottom: 10px; margin-top: 0; }
-  .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; }
+  .btn { padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; }
   .btn-add { background: #d4af37; color: #000; }
   .btn-del { background: #e74c3c; color: #fff; }
   .btn-edit { background: #3498db; color: #fff; margin-right: 5px; }
   .btn-ok { background: #27ae60; color: #fff; margin-right: 5px; }
+  .btn-pv { background: #7f8c8d; color: #fff; margin-right: 5px; }
   table { width: 100%; border-collapse: collapse; margin-top: 15px; }
   th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
   th { background: #111; color: #d4af37; }
@@ -22,6 +23,7 @@
   input, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
   label { font-size: 12px; color: #666; font-weight: bold; }
   .panel2 { background: #fafafa; border: 1px solid #eee; border-radius: 10px; padding: 15px; margin-top: 20px; }
+  .draft { border: 1px solid #d4af37; background: #fff8e6; border-radius: 10px; padding: 12px; margin-bottom: 10px; font-size: 13px; }
 </style>
 </head>
 <body>
@@ -33,8 +35,9 @@
     <tbody></tbody>
   </table>
   <div class="panel2">
-    <h2 style="margin-top:0">💬 Отзывы на модерации</h2>
-    <div id="revPend"></div>
+    <h2 style="margin-top:0">📨 Правки мастеров на модерации</h2>
+    <p style="font-size:12px;color:#888">Ничто не публикуется без тебя. Сначала посмотри превью изменений, потом решай.</p>
+    <div id="draftList"></div>
   </div>
 </div>
 
@@ -44,7 +47,7 @@
     <h2 id="modalTitle" style="margin-top:0;">Мастер</h2>
     <input type="hidden" id="masterId">
     <label>Имя и Фамилия</label><input type="text" id="name" placeholder="Иван Петров">
-    <label>Ниша</label><input type="text" id="category" placeholder="Барберы, Авто...">
+    <label>Ниша (ключ: barber/nails/auto/taxi...)</label><input type="text" id="category" placeholder="barber">
     <label>Телефон</label><input type="text" id="phone" placeholder="+7 900 ...">
     <label>Статус</label>
     <select id="status">
@@ -59,12 +62,19 @@
   </div>
 </div>
 
+<div id="pvModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:120">
+ <div style="background:#fff;height:100%;display:flex;flex-direction:column">
+  <div style="padding:10px 16px;background:#0a0a0a;color:#fff;display:flex;justify-content:space-between;align-items:center"><b>👁 Превью изменений мастера</b><button class="btn btn-del" onclick="pvModal.style.display='none'">Закрыть</button></div>
+  <iframe id="pvFrame" style="flex:1;border:0"></iframe>
+ </div>
+</div>
+
 <script>
   let masters = JSON.parse(localStorage.getItem('blacktim_masters')) || [
-    {id: 1, name: 'Иван Петров', category: 'Барберы', phone: '+7 900 123-45-67', status: 'active'}
+    {id: 1, name: 'Иван Петров', category: 'Барбер', template: 'barber', phone: '+7 900 123-45-67', status: 'active'}
   ];
-  const getR=()=>JSON.parse(localStorage.getItem('blacktim_reviews')||'[]');
-  const setR=a=>localStorage.setItem('blacktim_reviews',JSON.stringify(a));
+  const getD=()=>JSON.parse(localStorage.getItem('blacktim_drafts')||'[]');
+  const setD=a=>localStorage.setItem('blacktim_drafts',JSON.stringify(a));
 
   function render() {
     masters = JSON.parse(localStorage.getItem('blacktim_masters')) || masters;
@@ -80,33 +90,56 @@
         </td>
       </tr>`).join('');
     localStorage.setItem('blacktim_masters', JSON.stringify(masters));
-    const pend = getR().filter(r=>r.status==='pending');
-    revPend.innerHTML = pend.length ? pend.map(r=>{
-      const m = masters.find(x=>x.id===r.master_id);
-      return `<div style="border-bottom:1px solid #eee;padding:10px 0">
-        <b>${r.author}</b> → ${m?m.name:'?'} · ${'★'.repeat(r.rating)}<br>${r.text}<br>
-        <button class="btn btn-ok" onclick="revSet(${r.id},'ok')">Одобрить</button>
-        <button class="btn btn-del" onclick="revSet(${r.id},'no')">Отклонить</button></div>`;
-    }).join('') : '<p style="color:#888">Новых отзывов нет</p>';
+
+    const dr = getD().filter(x=>x.status==='pending');
+    draftList.innerHTML = dr.length ? dr.map(x=>{
+      const m = masters.find(v=>v.id===x.master_id);
+      return `<div class="draft">
+        <b>${m?m.name:'?'}</b> · ${new Date(x.created_at).toLocaleString('ru')} · ниша: ${x.payload.profile.template}<br>
+        Имя в правке: ${x.payload.profile.name} · услуг: ${x.payload.services.length} · фото: ${x.payload.gallery.length} · историй: ${x.payload.stories.length}<br><br>
+        <button class="btn btn-pv" onclick="pvDraft(${x.id})">👁 Превью</button>
+        <button class="btn btn-ok" onclick="applyDraft(${x.id})">✅ Одобрить</button>
+        <button class="btn btn-del" onclick="rejectDraft(${x.id})">❌ Отклонить</button>
+      </div>`;
+    }).join('') : '<p style="color:#888">Новых правок нет</p>';
   }
-  function revSet(id,st){setR(getR().map(r=>r.id===id?Object.assign(r,{status:st}):r));render();}
+  function pvDraft(id){const x=getD().find(v=>v.id===id);pvFrame.src='index.html#m'+x.master_id+'&draft='+id+'&r='+Date.now();pvModal.style.display='block';}
+  function applyDraft(id){
+    const x=getD().find(v=>v.id===id);if(!x)return;
+    if(!confirm('Одобрить и опубликовать изменения на живой странице?'))return;
+    masters=masters.map(m=>m.id===x.master_id?Object.assign(m,x.payload.profile):m);
+    localStorage.setItem('blacktim_masters',JSON.stringify(masters));
+    let nid=Date.now();
+    let sv=JSON.parse(localStorage.getItem('blacktim_services')||'[]').filter(s=>s.master_id!==x.master_id);
+    x.payload.services.forEach(s=>sv.push({id:nid++,master_id:x.master_id,name:s.name,price:s.price}));
+    localStorage.setItem('blacktim_services',JSON.stringify(sv));
+    let gl=JSON.parse(localStorage.getItem('blacktim_gallery')||'[]').filter(s=>s.master_id!==x.master_id);
+    x.payload.gallery.forEach(s=>gl.push({id:nid++,master_id:x.master_id,image:s.image,caption:s.caption}));
+    localStorage.setItem('blacktim_gallery',JSON.stringify(gl));
+    let st=JSON.parse(localStorage.getItem('blacktim_stories')||'[]').filter(s=>s.master_id!==x.master_id);
+    x.payload.stories.forEach(s=>st.push({id:nid++,master_id:x.master_id,image:s.image,caption:s.caption,created_at:new Date().toISOString()}));
+    localStorage.setItem('blacktim_stories',JSON.stringify(st));
+    setD(getD().filter(v=>v.id!==id));
+    render();
+  }
+  function rejectDraft(id){if(!confirm('Отклонить правки мастера?'))return;setD(getD().filter(v=>v.id!==id));render();}
   function openModal(id = null) {
     document.getElementById('modal').style.display = 'block';
     if(id) {
       const m = masters.find(x => x.id === id);
-      masterId.value = m.id; name.value = m.name; category.value = m.category||''; phone.value = m.phone||''; status.value = m.status;
+      masterId.value = m.id; name.value = m.name; category.value = m.template||'barber'; phone.value = m.phone||''; status.value = m.status;
       modalTitle.innerText = 'Редактировать мастера';
     } else {
-      masterId.value=''; name.value=''; category.value=''; phone.value=''; status.value='active';
+      masterId.value=''; name.value=''; category.value='barber'; phone.value=''; status.value='active';
       modalTitle.innerText = 'Новый мастер';
     }
   }
   function closeModal() { modal.style.display = 'none'; }
   function saveMaster() {
     const id = masterId.value;
-    const newM = { id: id ? parseInt(id) : Date.now(), name: name.value, category: category.value, phone: phone.value, status: status.value };
-    if(!newM.name || !newM.category) { alert('Заполни имя и нишу!'); return; }
-    if(id) { masters = masters.map(m => { if(m.id===newM.id){ return Object.assign(m,newM); } return m; }); }
+    const newM = { id: id ? parseInt(id) : Date.now(), name: name.value, template: category.value, category: category.value, phone: phone.value, status: status.value };
+    if(!newM.name) { alert('Заполни имя!'); return; }
+    if(id) { masters = masters.map(m => m.id===newM.id ? Object.assign(m,newM) : m); }
     else { masters.push(newM); }
     render(); closeModal();
   }
