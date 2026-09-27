@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BLACK TIM LOCAL — Томск</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Inter','Segoe UI',Arial,sans-serif}
+body{background:#f5f5f7;color:#111}.gold{color:#d4af37}
+.hd{background:#0a0a0a;color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
+.hd b{font-size:18px;letter-spacing:1px;cursor:pointer}
+.hd a{color:#999;font-size:12px;margin-left:14px;text-decoration:none}
+.wrap{max-width:1000px;margin:0 auto;padding:20px}
+.hero{text-align:center;padding:40px 10px}
+.hero h1{font-size:32px;font-weight:800}.hero p{color:#666;margin-top:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:20px}
+.card{background:#fff;border-radius:16px;padding:20px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.06);cursor:pointer;position:relative}
+.card .av{width:70px;height:70px;border-radius:50%;border:2px solid #d4af37;margin:0 auto 10px;background:#222}
+.card h3{font-size:16px}.card .st{color:#d4af37;font-size:13px;margin:4px 0}.card .pr{color:#555;font-size:13px}
+.tag{position:absolute;top:10px;right:10px;background:#0a0a0a;color:#fff;font-size:10px;padding:3px 8px;border-radius:10px}
+.btn{background:#0a0a0a;color:#fff;border:none;border-radius:24px;padding:12px 26px;font-size:14px;font-weight:600;cursor:pointer}
+.btn.g{background:#d4af37;color:#000}.btn.sm{padding:6px 12px;font-size:11px}.btn.red{background:#c0392b}
+.inp{width:100%;padding:11px;border:1px solid #ddd;border-radius:10px;font-size:14px;margin:6px 0}
+.panel{background:#fff;border-radius:16px;padding:20px;box-shadow:0 4px 14px rgba(0,0,0,.06);margin-bottom:16px}
+.panel h2{font-size:16px;margin-bottom:12px}
+.pf{background:#0a0a0a;color:#fff;border-radius:0 0 20px 20px;padding:50px 20px 30px;text-align:center}
+.pf .av{width:100px;height:100px;border-radius:50%;border:3px solid #d4af37;margin:0 auto 12px;background:#333}
+.pf h1{font-size:24px}.pf .role{color:#bbb;font-size:13px;margin:4px 0}
+.svc{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee;font-size:14px}
+.svc b{font-family:monospace}
+.hidden{display:none}
+.badge{display:inline-block;background:#d4af37;color:#000;font-size:10px;padding:2px 8px;border-radius:8px;font-weight:700}
+.msg{font-size:13px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="hd"><b onclick="showList()">BLACK TIM <span class="gold">LOCAL</span></b><span><a href="admin.html">Кабинет мастера</a></span></div>
+<div id="listView" class="wrap">
+ <div class="hero"><h1>НАЙДИ СВОЕГО МАСТЕРА В ТОМСКЕ</h1><p>Проверенные профили · Реальные отзывы · Запись 24/7</p></div>
+ <div class="grid" id="grid"></div>
+</div>
+<div id="masterView" class="hidden">
+ <div class="pf"><div class="av"></div>
+  <h1 id="mName"></h1><div class="role" id="mRole"></div><div class="gold" id="mRate"></div>
+  <div style="margin-top:14px"><button class="btn g" onclick="bookForm.scrollIntoView()">ЗАПИСАТЬСЯ ОНЛАЙН</button> <button class="btn" id="mWa">WhatsApp</button></div>
+ </div>
+ <div class="wrap">
+  <div class="panel"><h2>УСЛУГИ И ЦЕНЫ</h2><div id="mSvcs"></div></div>
+  <div class="panel"><h2>О МАСТЕРЕ</h2><p id="mDesc" style="font-size:14px;color:#555"></p></div>
+  <div class="panel" id="bookForm"><h2>ЗАПИСЬ ОНЛАЙН</h2>
+   <input class="inp" id="bName" placeholder="Ваше имя">
+   <input class="inp" id="bPhone" placeholder="Ваш телефон">
+   <input class="inp" id="bDate" type="date">
+   <button class="btn" onclick="sendBooking()">ОТПРАВИТЬ ЗАЯВКУ</button>
+   <p id="bMsg" class="msg"></p></div>
+  <div class="panel" style="text-align:center;color:#999;font-size:11px">Работает на BLACK TIM LOCAL™</div>
+ </div>
+</div>
+<script>
+const getM=()=>JSON.parse(localStorage.getItem('blacktim_masters')||'[]');
+const getS=()=>JSON.parse(localStorage.getItem('blacktim_services')||'[]');
+const getB=()=>JSON.parse(localStorage.getItem('blacktim_bookings')||'[]');
+let cur=null;
+function renderList(){
+ const ms=getM().filter(m=>m.status==='active');
+ grid.innerHTML=ms.length?ms.map(m=>`<div class="card" onclick="showMaster(${m.id})"><span class="tag">Томск</span><div class="av"></div><h3>${m.name}</h3><div class="st">★★★★★ ${m.rating||'5.0'}</div><div class="pr">${m.price_from?'от '+m.price_from+' ₽':'цена по запросу'}</div>${m.plan==='pro'?'<div style="margin-top:6px"><span class="badge">PRO</span></div>':''}</div>`).join(''):'<p style="color:#888">Пока нет мастеров — добавь первого в super.html</p>';
+}
+function showMaster(id){
+ cur=getM().find(m=>m.id===id);if(!cur)return;
+ listView.classList.add('hidden');masterView.classList.remove('hidden');
+ mName.textContent=cur.name;
+ mRole.textContent=(cur.category||'Мастер')+' · Томск';
+ mRate.textContent='★★★★★ '+(cur.rating||'5.0')+' ('+(cur.reviews||0)+' отзывов)';
+ mDesc.textContent=cur.description||'Описание скоро появится.';
+ mWa.onclick=()=>location.href='https://wa.me/'+(cur.whatsapp||'');
+ const sv=getS().filter(s=>s.master_id===id);
+ mSvcs.innerHTML=sv.length?sv.map(s=>`<div class="svc"><span>${s.name}</span><b>${s.price} ₽</b></div>`).join(''):'<p style="color:#888">Услуги скоро появятся</p>';
+ scrollTo(0,0);
+}
+function showList(){masterView.classList.add('hidden');listView.classList.remove('hidden');renderList();}
+function sendBooking(){
+ const n=bName.value,p=bPhone.value,d=bDate.value;
+ if(!n||!p||!d){bMsg.textContent='Заполни все поля';return;}
+ const b=getB();b.push({id:Date.now(),master_id:cur.id,client_name:n,client_phone:p,date:d,status:'new'});
+ localStorage.setItem('blacktim_bookings',JSON.stringify(b));
+ bMsg.textContent='✅ Заявка отправлена! Она уже в кабинете мастера.';
+ bName.value='';bPhone.value='';
+}
+renderList();
+if(location.hash.startsWith('#m')){const id=+location.hash.slice(2);if(id)showMaster(id);}
+</script>
+</body>
+</html>
